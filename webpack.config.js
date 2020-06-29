@@ -1,4 +1,7 @@
 const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const webpack = require("webpack");
 
 module.exports = {
   // entry: "./src/index.js",//等价于
@@ -6,8 +9,24 @@ module.exports = {
   entry: {
     main: "./src/index.js",
   },
+  devtool: "cheap-module-source-map",
+  devServer: {
+    contentBase: "./dist",
+    open: true,
+    proxy: {
+      "/api": "http://localhost:3000",
+    },
+    port: 8888,
+    hot: true,
+    hotOnly: true,
+  },
   module: {
     rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+      },
       {
         test: /\.(png|jpg|gif)$/,
         use: {
@@ -26,16 +45,28 @@ module.exports = {
           "style-loader",
           {
             loader: "css-loader",
-            options: { modules: true, importLoaders: 2 },
+            options: {
+              // modules: true,
+              importLoaders: 2,
+            },
           },
-          "sass-loader",
           "postcss-loader",
+          "sass-loader",
         ],
       },
     ],
   },
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      title: "toWebpack",
+      template: "src/index.html",
+    }),
+    new webpack.NamedModulesPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+  ],
   output: {
-    filename: "bundle.js",
+    filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
   },
 };
